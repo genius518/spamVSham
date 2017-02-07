@@ -1,0 +1,82 @@
+from sklearn import svm  
+from sklearn.feature_extraction.text import CountVectorizer
+ 
+fp = open("spam_ham.tsv", "r")
+rawTraining = []
+rawTarget = []
+
+for linea in fp.readlines():
+    rawTraining.append(linea.split("\t")[1])
+    rawTarget.append(linea.split("\t")[0])
+fp.close()
+
+size = len(rawTarget)
+trainingDataPercent = 0.6;
+numOfTraining = int(size * trainingDataPercent);
+print ("numOfTraining: %s"%numOfTraining) 
+
+training = rawTraining[0:numOfTraining]
+target = rawTarget[0:numOfTraining]
+# print training
+# print target
+
+vectorizer1 = CountVectorizer(min_df=1)
+vectorizer2 = CountVectorizer(min_df=1)
+
+fitTraining = vectorizer1.fit_transform(training)
+arrayTrainging = fitTraining.toarray();
+matrixTrainging=[]
+matrixTrainging = [[] for i in range(len(arrayTrainging))]
+for i in range(len(arrayTrainging)):
+    print ("training data index: %s"%i) 
+    matrixTrainging[i][:] = arrayTrainging[i]
+# print matrixTrainging
+ 
+fitTarget = vectorizer2.fit_transform(target)
+arrayTarget = fitTarget.toarray();
+matrixTarget = []
+# print arrayTarget
+# print len(arrayTarget)
+for i in range(len(arrayTarget)):
+    print ("target data index: %s"%i) 
+    matrixTarget.append(arrayTarget[i][0])
+# print matrixTarget
+ 
+print ("SVM start learning") 
+from sklearn.naive_bayes import MultinomialNB
+# clf = MultinomialNB()
+# clf = svm.SVC(kernel='rbf')
+clf = svm.SVC(kernel='linear')
+clf.fit(matrixTrainging, matrixTarget) 
+ 
+unknown = rawTraining[numOfTraining:]
+fitUnknown = vectorizer1.transform(unknown)
+arrayUnknown = fitUnknown.toarray();
+matrixUnknown = [[] for i in range(len(arrayUnknown))]
+for i in range(len(arrayUnknown)):
+    matrixUnknown[i][:] = arrayUnknown[i]
+    print ("unknown data index: %s"%i) 
+# print matrixUnknown
+ 
+answer = rawTarget[numOfTraining:]
+fitAnswer = vectorizer2.transform(answer)
+arrayAnswer = fitAnswer.toarray();
+matrixAnswer = []
+# print arrayTarget
+
+for i in range(len(arrayAnswer)):
+#     print arrayTarget[i][0]
+    matrixAnswer.append(arrayAnswer[i][0])
+    print ("answer data index: %s"%i) 
+# print matrixAnswer
+ 
+print ("SVM start predicting")    
+result = clf.predict(matrixUnknown)
+# print result
+correct=0.0
+for i in range(len(result)):
+    if result[i]==matrixAnswer[i]:
+        correct=correct+1
+ 
+accuracy=correct/len(result)
+print ("accuracy: %s"%accuracy) 
